@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番茄工作法定时器</title>
+    <!-- 引入 Tailwind CSS 用于样式设计 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Tone.js 用于生成提示音 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- 引入数字时钟字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 自定义样式 */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* 移除移动设备点击高亮 */
+        }
+        .timer-display {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* 隐藏数字输入框的默认箭头 */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        /* 自定义按钮点击效果 */
+        .btn-press {
+            transform: scale(0.98);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen transition-colors duration-1000" id="body">
+
+    <div class="w-full max-w-md mx-auto p-4 md:p-8 bg-gray-800 rounded-3xl shadow-2xl">
+        
+        <!-- 时间显示区域 -->
+        <div class="bg-gray-900/70 p-6 rounded-2xl mb-8 space-y-4">
+            <!-- 专注时间 -->
+            <div id="focus-timer-container" class="flex justify-between items-center transition-opacity duration-300">
+                <span id="focus-label" class="text-xl font-semibold text-green-400">专注</span>
+                <div id="focus-display" class="timer-display text-6xl md:text-7xl font-bold text-white">25:00</div>
+            </div>
+            <!-- 分隔线 -->
+            <div class="border-b border-gray-700"></div>
+            <!-- 休息时间 -->
+            <div id="break-timer-container" class="flex justify-between items-center transition-opacity duration-300 opacity-50">
+                <span id="break-label" class="text-xl font-semibold text-yellow-400">休息</span>
+                <div id="break-display" class="timer-display text-6xl md:text-7xl font-bold text-white">05:00</div>
+            </div>
+        </div>
+        
+        <!-- 时间设置区域 -->
+        <div class="flex justify-around items-center mb-8 bg-gray-700/50 p-4 rounded-xl">
+            <div class="text-center">
+                <label for="focus-input" class="block text-sm font-medium text-gray-400 mb-2">专注 (分钟)</label>
+                <input type="number" id="focus-input" value="25" class="w-24 bg-gray-900 text-white text-center text-2xl font-bold rounded-lg p-2 border-2 border-transparent focus:outline-none focus:border-green-500 transition">
+            </div>
+            <div class="text-center">
+                <label for="break-input" class="block text-sm font-medium text-gray-400 mb-2">休息 (分钟)</label>
+                <input type="number" id="break-input" value="5" class="w-24 bg-gray-900 text-white text-center text-2xl font-bold rounded-lg p-2 border-2 border-transparent focus:outline-none focus:border-yellow-500 transition">
+            </div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="grid grid-cols-3 gap-4">
+            <button id="start-pause-btn" class="col-span-2 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl text-xl transition-all duration-200 transform active:scale-95">开始</button>
+            <button id="reset-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-4 rounded-xl text-xl transition-all duration-200 transform active:scale-95">重置</button>
+        </div>
+        
+        <!-- 错误消息 -->
+        <div id="error-message" class="text-center text-red-400 mt-4 h-6"></div>
+
+        <!-- 循环计数 -->
+        <div class="text-center mt-8">
+            <p class="text-gray-400">已完成的专注次数: <span id="cycle-count" class="font-bold text-lg text-white">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素获取
+        const body = document.getElementById('body');
+        const focusInput = document.getElementById('focus-input');
+        const breakInput = document.getElementById('break-input');
+        const startPauseBtn = document.getElementById('start-pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const cycleCountSpan = document.getElementById('cycle-count');
+        const errorMessage = document.getElementById('error-message');
+        const focusDisplay = document.getElementById('focus-display');
+        const breakDisplay = document.getElementById('break-display');
+        const focusTimerContainer = document.getElementById('focus-timer-container');
+        const breakTimerContainer = document.getElementById('break-timer-container');
+
+        // 状态变量
+        let timer;
+        let isRunning = false;
+        let currentMode = 'focus'; // 'focus' 或 'break'
+        let focusTime = 25 * 60;
+        let breakTime = 5 * 60;
+        let timeLeft = focusTime;
+        let cycleCount = 0;
+        let synth; // 声明 synth，但先不初始化
+        let isAudioInitialized = false; // 跟踪音频是否已初始化
+
+        // 初始化音频
+        function initAudio() {
+            if (isAudioInitialized) return;
+            try {
+                if (typeof Tone !== 'undefined' && Tone.Synth) {
+                    Tone.start(); 
+                    synth = new Tone.Synth().toDestination();
+                    isAudioInitialized = true;
+                    console.log("音频已成功初始化。");
+                } else {
+                     console.error("Tone.js 库未找到或加载失败。声音将被禁用。");
+                }
+            } catch (e) {
+                console.error("无法初始化 Tone.js。声音功能将被禁用。", e);
+            }
+        }
+
+        // 播放提示音
+        function playSound() {
+            if (isAudioInitialized && synth) {
+                synth.triggerAttackRelease("C5", "8n", Tone.now());
+                setTimeout(() => {
+                    synth.triggerAttackRelease("G5", "8n", Tone.now() + 0.2);
+                }, 100);
+            }
+        }
+
+        // 更新时间显示
+        function updateDisplay() {
+            const formatTime = (timeInSeconds) => {
+                const minutes = Math.floor(timeInSeconds / 60);
+                const seconds = timeInSeconds % 60;
+                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            };
+
+            // 无论在哪种模式，都更新两个显示器的时间
+            focusDisplay.textContent = formatTime(currentMode === 'focus' ? timeLeft : focusTime);
+            breakDisplay.textContent = formatTime(currentMode === 'break' ? timeLeft : breakTime);
+
+            if (currentMode === 'focus') {
+                focusTimerContainer.classList.remove('opacity-50');
+                breakTimerContainer.classList.add('opacity-50');
+                document.title = `${formatTime(timeLeft)} - 专注`;
+            } else { // break mode
+                breakTimerContainer.classList.remove('opacity-50');
+                focusTimerContainer.classList.add('opacity-50');
+                document.title = `${formatTime(timeLeft)} - 休息`;
+            }
+        }
+
+        // 切换模式 (专注/休息)
+        function switchMode() {
+            if (currentMode === 'focus') {
+                currentMode = 'break';
+                timeLeft = breakTime;
+                body.classList.remove('bg-gray-900');
+                body.classList.add('bg-yellow-900');
+                cycleCount++;
+                cycleCountSpan.textContent = cycleCount;
+            } else {
+                currentMode = 'focus';
+                timeLeft = focusTime;
+                body.classList.remove('bg-yellow-900');
+                body.classList.add('bg-gray-900');
+            }
+            updateDisplay();
+        }
+
+        // 计时器核心逻辑
+        function countdown() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateDisplay();
+            } else {
+                playSound();
+                switchMode();
+            }
+        }
+
+        // 开始或暂停计时器
+        function toggleTimer() {
+            if (isRunning) {
+                // 暂停
+                clearInterval(timer);
+                isRunning = false;
+                startPauseBtn.textContent = '继续';
+                startPauseBtn.classList.remove('bg-red-500');
+                startPauseBtn.classList.add(currentMode === 'focus' ? 'bg-green-500' : 'bg-yellow-500');
+            } else {
+                // 开始/继续
+                isRunning = true;
+                timer = setInterval(countdown, 1000);
+                startPauseBtn.textContent = '暂停';
+                startPauseBtn.classList.remove('bg-green-500', 'bg-yellow-500');
+                startPauseBtn.classList.add('bg-red-500');
+            }
+        }
+
+        // 重置计时器
+        function resetTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            currentMode = 'focus';
+            focusTime = parseInt(focusInput.value, 10) * 60 || 0;
+            breakTime = parseInt(breakInput.value, 10) * 60 || 0;
+            timeLeft = focusTime;
+            cycleCount = 0;
+            
+            updateDisplay();
+            cycleCountSpan.textContent = cycleCount;
+            errorMessage.textContent = '';
+            startPauseBtn.textContent = '开始';
+            startPauseBtn.classList.remove('bg-red-500', 'bg-yellow-500');
+            startPauseBtn.classList.add('bg-green-500');
+            
+            body.classList.remove('bg-yellow-900');
+            body.classList.add('bg-gray-900');
+            
+            focusInput.disabled = false;
+            breakInput.disabled = false;
+        }
+
+        // 事件监听
+        startPauseBtn.addEventListener('click', () => {
+            if (!isAudioInitialized) {
+                initAudio();
+            }
+            
+            errorMessage.textContent = '';
+            if (!isRunning && (timeLeft === focusTime || timeLeft === 0)) {
+                // 仅在计时器未运行且处于初始状态时读取新值
+                let newFocusTime = parseInt(focusInput.value, 10) * 60;
+                let newBreakTime = parseInt(breakInput.value, 10) * 60;
+
+                if(isNaN(newFocusTime) || newFocusTime <= 0) {
+                    errorMessage.textContent = "请输入有效的专注时间！";
+                    return;
+                }
+                 if(isNaN(newBreakTime) || newBreakTime < 0) {
+                    errorMessage.textContent = "请输入有效的休息时间！";
+                    return;
+                }
+                
+                focusTime = newFocusTime;
+                breakTime = newBreakTime;
+                
+                // 如果是从头开始，则设置timeLeft
+                if(currentMode === 'focus') timeLeft = focusTime;
+                else timeLeft = breakTime;
+
+                updateDisplay();
+                focusInput.disabled = true;
+                breakInput.disabled = true;
+            }
+            toggleTimer();
+        });
+
+        resetBtn.addEventListener('click', resetTimer);
+        
+        focusInput.addEventListener('change', () => {
+            if (!isRunning) resetTimer();
+        });
+        
+        breakInput.addEventListener('change', () => {
+             if (!isRunning) resetTimer();
+        });
+
+        window.onload = resetTimer;
+
+    </script>
+</body>
+</html>
+
+
