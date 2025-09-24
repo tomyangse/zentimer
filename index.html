@@ -6,34 +6,25 @@
     <title>番茄工作法定时器</title>
     <!-- 引入 Tailwind CSS 用于样式设计 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 移除了 Tone.js 的引用 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- 引入数字时钟字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap" rel="stylesheet">
+    <!-- 引入新的字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         /* 自定义样式 */
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #F8F7F2; /* 背景色 */
             -webkit-tap-highlight-color: transparent; /* 移除移动设备点击高亮 */
         }
         .timer-display {
-            font-family: 'Chakra Petch', sans-serif;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.4); /* 增加辉光效果，模仿LCD */
-        }
-        .timer-display span {
-            display: inline-block;
-            text-align: center;
-            width: 0.6em; /* 微调宽度以适应新字体 */
-        }
-        .timer-display .colon {
-            width: 0.3em;
-            transform: translateY(-0.05em); /* 微调冒号的垂直位置 */
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
         }
         /* 自定义按钮点击效果 */
         .btn-press {
             transform: scale(0.98);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         /* Custom Range Slider Styles */
@@ -49,34 +40,34 @@
 
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 24px;
-            width: 24px;
+            height: 20px;
+            width: 20px;
             border-radius: 50%;
-            background: #4ade80; /* green-400 */
+            background: #86A873;
             cursor: pointer;
-            margin-top: -9px; /* 垂直居中 thumb */
+            margin-top: -7px; 
         }
 
         input[type=range]::-moz-range-thumb {
-            height: 24px;
-            width: 24px;
+            height: 20px;
+            width: 20px;
             border-radius: 50%;
-            background: #4ade80; /* green-400 */
+            background: #86A873;
             cursor: pointer;
         }
 
         #break-slider::-webkit-slider-thumb {
-            background: #facc15; /* yellow-400 */
+            background: #A7C957;
         }
         #break-slider::-moz-range-thumb {
-            background: #facc15; /* yellow-400 */
+            background: #A7C957;
         }
 
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 6px;
             cursor: pointer;
-            background: #374151; /* gray-700 */
+            background: #E5E7EB; /* gray-200 */
             border-radius: 5px;
         }
 
@@ -84,90 +75,88 @@
             width: 100%;
             height: 6px;
             cursor: pointer;
-            background: #374151; /* gray-700 */
+            background: #E5E7EB; /* gray-200 */
             border-radius: 5px;
+        }
+        /* 应用等宽数字特性 */
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        /* 垂直微调冒号位置 */
+        .colon {
+            position: relative;
+            top: -0.1em;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen transition-colors duration-1000" id="body">
+<body class="flex items-center justify-center min-h-screen">
 
-    <div class="w-full max-w-md mx-auto p-4 md:p-8 bg-gray-800 rounded-3xl shadow-2xl">
+    <div class="w-full max-w-sm mx-auto p-8 bg-white/70 backdrop-blur-sm rounded-3xl shadow-lg">
         
         <!-- 时间显示区域 -->
-        <div class="bg-gray-900/70 p-6 rounded-2xl mb-6 space-y-4">
-            <!-- 专注时间 -->
-            <div id="focus-timer-container" class="flex justify-between items-center">
-                <span id="focus-label" class="text-xl font-semibold text-green-400 transition-colors duration-300">专注</span>
-                <div id="focus-display" class="timer-display text-6xl md:text-7xl font-bold text-white flex items-center justify-end transition-colors duration-300">
-                    <span>2</span>
-                    <span>5</span>
-                    <span class="colon">:</span>
-                    <span>0</span>
-                    <span>0</span>
-                </div>
+        <div class="text-center mb-8">
+            <div id="timer-label" class="text-gray-400 text-lg mb-2">Focus</div>
+            <div id="timer-display" class="timer-display text-7xl md:text-8xl text-gray-800 flex justify-center items-center">
+                <span id="timer-minutes" class="tabular-nums">25</span>
+                <span class="mx-1 colon">:</span>
+                <span id="timer-seconds" class="tabular-nums">00</span>
             </div>
-            <!-- 分隔线 -->
-            <div class="border-b border-gray-700"></div>
-            <!-- 休息时间 -->
-            <div id="break-timer-container" class="flex justify-between items-center">
-                <span id="break-label" class="text-xl font-semibold text-yellow-400 transition-colors duration-300">休息</span>
-                <div id="break-display" class="timer-display text-6xl md:text-7xl font-bold text-white flex items-center justify-end transition-colors duration-300">
-                    <span>0</span>
-                    <span>5</span>
-                    <span class="colon">:</span>
-                    <span>0</span>
-                    <span>0</span>
-                </div>
+            <div id="timer-underline" class="w-1/3 h-1 bg-green-400 mx-auto mt-2 transition-all duration-300"></div>
+        </div>
+
+         <!-- 第二时间显示 -->
+        <div class="text-center mb-10">
+            <div id="secondary-timer-label" class="text-gray-400 text-md">Break</div>
+            <div id="secondary-timer-display" class="timer-display text-3xl text-gray-400 flex justify-center items-center">
+                <span id="secondary-timer-minutes" class="tabular-nums">05</span>
+                <span class="mx-1 colon">:</span>
+                <span id="secondary-timer-seconds" class="tabular-nums">00</span>
             </div>
+             <div class="w-1/4 h-px bg-gray-300 mx-auto mt-1"></div>
         </div>
         
         <!-- 控制按钮 -->
-        <div class="space-y-4 mb-8">
-            <!-- 第一排: 开始/暂停按钮 -->
-            <button id="start-pause-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl text-xl transition-all duration-200 transform active:scale-95">开始</button>
-            
-            <!-- 第二排: 设置和重置按钮 -->
-            <div class="grid grid-cols-2 gap-4">
-                <button id="settings-btn" class="w-full flex justify-center items-center bg-gray-700/80 hover:bg-gray-700 text-white font-bold py-4 px-4 rounded-xl transition-all duration-200 transform active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </button>
-                <button id="reset-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-4 rounded-xl text-xl transition-all duration-200 transform active:scale-95">重置</button>
-            </div>
+        <div class="flex items-center justify-center space-x-4 mb-8">
+            <button id="settings-btn" class="w-14 h-14 flex justify-center items-center bg-white border border-gray-200 text-gray-600 rounded-full shadow-md hover:bg-gray-50 transition-all duration-200 transform active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+            <button id="start-pause-btn" class="flex-grow bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg transition-all duration-200 transform active:scale-95">开始</button>
+            <button id="reset-btn" class="text-gray-500 hover:text-gray-800 font-semibold px-4 transition-colors">重置</button>
         </div>
         
         <!-- 错误消息 -->
-        <div id="error-message" class="text-center text-red-400 mt-4 h-6"></div>
+        <div id="error-message" class="text-center text-red-500 mt-4 h-6"></div>
 
         <!-- 循环计数 -->
-        <div class="text-center mt-8">
-            <p id="cycle-count-label" class="text-gray-400">已完成的专注次数: <span id="cycle-count" class="font-bold text-lg text-white">0</span></p>
+        <div class="text-center">
+            <p id="cycle-count-label" class="text-gray-400">Completed focus sessions: <span id="cycle-count" class="font-bold text-gray-600">0</span></p>
         </div>
     </div>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-gray-800 p-6 md:p-8 rounded-2xl w-full max-w-sm shadow-xl">
-            <h2 id="settings-title" class="text-2xl font-bold mb-6 text-center text-gray-300">设置</h2>
-            <div class="space-y-8">
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white p-8 rounded-2xl w-full max-w-sm shadow-xl">
+            <h2 id="settings-title" class="text-2xl font-bold mb-6 text-center text-gray-700">设置</h2>
+            <div class="space-y-6">
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <label for="focus-slider" id="focus-slider-label" class="font-medium text-gray-400">专注时间</label>
-                        <span id="focus-slider-value" class="font-bold text-lg text-green-400">25 分钟</span>
+                        <label for="focus-slider" id="focus-slider-label" class="font-medium text-gray-600">专注时间</label>
+                        <span id="focus-slider-value" class="font-bold text-lg text-green-600">25 分钟</span>
                     </div>
                     <input type="range" id="focus-slider" min="1" max="60" value="25" class="w-full">
                 </div>
                 <div>
                      <div class="flex justify-between items-center mb-2">
-                        <label for="break-slider" id="break-slider-label" class="font-medium text-gray-400">休息时间</label>
-                        <span id="break-slider-value" class="font-bold text-lg text-yellow-400">5 分钟</span>
+                        <label for="break-slider" id="break-slider-label" class="font-medium text-gray-600">休息时间</label>
+                        <span id="break-slider-value" class="font-bold text-lg text-yellow-600">5 分钟</span>
                     </div>
                     <input type="range" id="break-slider" min="0" max="60" value="5" class="w-full">
                 </div>
             </div>
-            <button id="close-settings-btn" class="mt-10 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl text-lg transition-all duration-200 transform active:scale-95">完成</button>
+            <button id="close-settings-btn" class="mt-8 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-full text-lg transition-all duration-200 transform active:scale-95">完成</button>
         </div>
     </div>
 
@@ -175,15 +164,18 @@
     <script>
         // DOM 元素获取
         const body = document.getElementById('body');
+        const timerMinutes = document.getElementById('timer-minutes');
+        const timerSeconds = document.getElementById('timer-seconds');
+        const timerLabel = document.getElementById('timer-label');
+        const timerUnderline = document.getElementById('timer-underline');
+        const secondaryTimerMinutes = document.getElementById('secondary-timer-minutes');
+        const secondaryTimerSeconds = document.getElementById('secondary-timer-seconds');
+        const secondaryTimerLabel = document.getElementById('secondary-timer-label');
         const startPauseBtn = document.getElementById('start-pause-btn');
         const resetBtn = document.getElementById('reset-btn');
         const cycleCountSpan = document.getElementById('cycle-count');
         const cycleCountLabel = document.getElementById('cycle-count-label');
         const errorMessage = document.getElementById('error-message');
-        const focusDisplay = document.getElementById('focus-display');
-        const breakDisplay = document.getElementById('break-display');
-        const focusLabel = document.getElementById('focus-label');
-        const breakLabel = document.getElementById('break-label');
         const settingsBtn = document.getElementById('settings-btn');
         const settingsModal = document.getElementById('settings-modal');
         const settingsTitle = document.getElementById('settings-title');
@@ -208,11 +200,11 @@
         
         // --- 国际化 ---
         let currentLang = 'zh-CN';
-        let langStrings; // 当前语言的翻译对象 (重命名了变量 t)
+        let langStrings; 
 
         const translations = {
             'zh-CN': {
-                title: '番茄工作法定时器',
+                title: '专注定时器',
                 focus: '专注',
                 break: '休息',
                 start: '开始',
@@ -224,7 +216,7 @@
                 breakTime: '休息时间',
                 minutes: '分钟',
                 done: '完成',
-                completedFocusSessions: '已完成的专注次数',
+                completedFocusSessions: '已完成的专注环节',
                 focusTimeError: '专注时间不能少于1分钟！',
                 docTitleFocus: '专注',
                 docTitleBreak: '休息',
@@ -233,7 +225,7 @@
                 langCode: 'zh-CN'
             },
             'en': {
-                title: 'Pomodoro Timer',
+                title: 'Focus Timer',
                 focus: 'Focus',
                 break: 'Break',
                 start: 'Start',
@@ -261,22 +253,41 @@
 
             document.documentElement.lang = currentLang;
             document.title = langStrings.title;
-            focusLabel.textContent = langStrings.focus;
-            breakLabel.textContent = langStrings.break;
             resetBtn.textContent = langStrings.reset;
             settingsTitle.textContent = langStrings.settings;
             focusSliderLabel.textContent = langStrings.focusTime;
             breakSliderLabel.textContent = langStrings.breakTime;
             closeSettingsBtn.textContent = langStrings.done;
-            cycleCountLabel.innerHTML = `${langStrings.completedFocusSessions}: <span id="cycle-count" class="font-bold text-lg text-white">${cycleCount}</span>`;
+            
+            const cycleCountContainer = document.getElementById('cycle-count-label');
+            if (cycleCountContainer) {
+                 cycleCountContainer.innerHTML = `${langStrings.completedFocusSessions}: <span id="cycle-count" class="font-bold text-gray-600">${cycleCount}</span>`;
+            }
 
-            // 更新动态文本
+            updateButtonText();
+            updateSliderDisplay();
+            updateDisplay();
+        }
+
+        function updateSliderDisplay(){
             focusSliderValue.textContent = `${focusSlider.value} ${langStrings.minutes}`;
             breakSliderValue.textContent = `${breakSlider.value} ${langStrings.minutes}`;
         }
+        
+        function updateButtonText(){
+             if (isRunning) {
+                startPauseBtn.textContent = langStrings.pause;
+            } else {
+                if (timeLeft < (currentMode === 'focus' ? focusTime : breakTime) && timeLeft > 0) {
+                    startPauseBtn.textContent = langStrings.continue;
+                } else {
+                    startPauseBtn.textContent = langStrings.start;
+                }
+            }
+        }
         // --- 国际化结束 ---
 
-        // 音频初始化 (使用 Web Audio API)
+        // 音频初始化
         function initAudio() {
             if (isAudioInitialized) return;
             try {
@@ -286,11 +297,11 @@
                 }
                 isAudioInitialized = true;
             } catch (e) {
-                console.error("Could not initialize Web Audio API. Sound will be disabled.", e);
+                console.error("Could not initialize Web Audio API.", e);
             }
         }
         
-        // 播放提示音 (使用 Web Audio API) 和语音提示
+        // 播放声音和语音
         function playSound(type) {
             if (!isAudioInitialized || !audioCtx) return;
 
@@ -300,19 +311,13 @@
             let totalSoundDuration = 0;
 
             if (type === 'focusEnd') {
-                notes = [
-                    { freq: 523.25, start: now, duration: 0.5 }, { freq: 659.25, start: now + 0.5, duration: 0.5 },
-                    { freq: 783.99, start: now + 1.0, duration: 0.5 }, { freq: 1046.50, start: now + 1.5, duration: 1.5 }
-                ];
+                notes = [ { freq: 523.25, start: now, duration: 0.5 }, { freq: 783.99, start: now + 0.5, duration: 1.0 } ];
                 textToSpeak = langStrings.speakBreak;
-                totalSoundDuration = 3.0;
+                totalSoundDuration = 1.5;
             } else if (type === 'breakEnd') {
-                notes = [
-                    { freq: 783.99, start: now, duration: 0.3 }, { freq: 783.99, start: now + 0.4, duration: 0.3 },
-                    { freq: 783.99, start: now + 0.8, duration: 0.3 }, { freq: 523.25, start: now + 1.2, duration: 1.5 }
-                ];
+                notes = [ { freq: 783.99, start: now, duration: 0.3 }, { freq: 523.25, start: now + 0.4, duration: 1.0 } ];
                 textToSpeak = langStrings.speakWork;
-                totalSoundDuration = 2.7;
+                totalSoundDuration = 1.4;
             }
 
             notes.forEach(note => {
@@ -322,7 +327,7 @@
                 gainNode.connect(audioCtx.destination);
                 oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(note.freq, note.start);
-                gainNode.gain.setValueAtTime(0.3, note.start);
+                gainNode.gain.setValueAtTime(0.2, note.start);
                 gainNode.gain.exponentialRampToValueAtTime(0.0001, note.start + note.duration);
                 oscillator.start(note.start);
                 oscillator.stop(note.start + note.duration);
@@ -340,49 +345,45 @@
             }, totalSoundDuration * 1000);
         }
 
+        // 格式化时间
+        const formatTime = (timeInSeconds) => {
+            const minutes = Math.floor(timeInSeconds / 60);
+            const seconds = timeInSeconds % 60;
+            return [String(minutes).padStart(2, '0'), String(seconds).padStart(2, '0')];
+        };
+
         // 更新时间显示
         function updateDisplay() {
-            const formatTime = (timeInSeconds) => {
-                const minutes = Math.floor(timeInSeconds / 60);
-                const seconds = timeInSeconds % 60;
-                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            };
+            if (!langStrings) return; 
 
-            const focusTimeStr = formatTime(currentMode === 'focus' ? timeLeft : focusTime);
-            const breakTimeStr = formatTime(currentMode === 'break' ? timeLeft : breakTime);
-
-            const updateSpans = (container, timeStr) => {
-                const spans = container.querySelectorAll('span');
-                spans[0].textContent = timeStr[0];
-                spans[1].textContent = timeStr[1];
-                spans[2].textContent = ':';
-                spans[3].textContent = timeStr[3];
-                spans[4].textContent = timeStr[4];
-            };
-
-            updateSpans(focusDisplay, focusTimeStr);
-            updateSpans(breakDisplay, breakTimeStr);
-
+            const [mainMinutes, mainSeconds] = formatTime(timeLeft);
+            
             if (currentMode === 'focus') {
-                focusDisplay.classList.remove('text-gray-600');
-                focusDisplay.classList.add('text-white');
-                focusLabel.classList.remove('text-gray-500');
-                focusLabel.classList.add('text-green-400');
-                breakDisplay.classList.add('text-gray-600');
-                breakDisplay.classList.remove('text-white');
-                breakLabel.classList.add('text-gray-500');
-                breakLabel.classList.remove('text-yellow-400');
-                document.title = `${formatTime(timeLeft)} - ${langStrings.docTitleFocus}`;
+                timerLabel.textContent = langStrings.focus;
+                timerMinutes.textContent = mainMinutes;
+                timerSeconds.textContent = mainSeconds;
+                timerUnderline.classList.remove('bg-yellow-400');
+                timerUnderline.classList.add('bg-green-400');
+
+                const [secMinutes, secSeconds] = formatTime(breakTime);
+                secondaryTimerLabel.textContent = langStrings.break;
+                secondaryTimerMinutes.textContent = secMinutes;
+                secondaryTimerSeconds.textContent = secSeconds;
+                
+                document.title = `${mainMinutes}:${mainSeconds} - ${langStrings.docTitleFocus}`;
             } else {
-                focusDisplay.classList.add('text-gray-600');
-                focusDisplay.classList.remove('text-white');
-                focusLabel.classList.add('text-gray-500');
-                focusLabel.classList.remove('text-green-400');
-                breakDisplay.classList.remove('text-gray-600');
-                breakDisplay.classList.add('text-white');
-                breakLabel.classList.remove('text-gray-500');
-                breakLabel.classList.add('text-yellow-400');
-                document.title = `${formatTime(timeLeft)} - ${langStrings.docTitleBreak}`;
+                timerLabel.textContent = langStrings.break;
+                timerMinutes.textContent = mainMinutes;
+                timerSeconds.textContent = mainSeconds;
+                timerUnderline.classList.remove('bg-green-400');
+                timerUnderline.classList.add('bg-yellow-400');
+
+                const [secMinutes, secSeconds] = formatTime(focusTime);
+                secondaryTimerLabel.textContent = langStrings.focus;
+                secondaryTimerMinutes.textContent = secMinutes;
+                secondaryTimerSeconds.textContent = secSeconds;
+                
+                document.title = `${mainMinutes}:${mainSeconds} - ${langStrings.docTitleBreak}`;
             }
         }
 
@@ -391,15 +392,11 @@
             if (currentMode === 'focus') {
                 currentMode = 'break';
                 timeLeft = breakTime;
-                body.classList.remove('bg-gray-900');
-                body.classList.add('bg-yellow-900');
                 cycleCount++;
                 document.getElementById('cycle-count').textContent = cycleCount;
             } else {
                 currentMode = 'focus';
                 timeLeft = focusTime;
-                body.classList.remove('bg-yellow-900');
-                body.classList.add('bg-gray-900');
             }
             updateDisplay();
         }
@@ -410,11 +407,7 @@
                 timeLeft--;
                 updateDisplay();
             } else {
-                if (currentMode === 'focus') {
-                    playSound('focusEnd');
-                } else {
-                    playSound('breakEnd');
-                }
+                playSound(currentMode === 'focus' ? 'focusEnd' : 'breakEnd');
                 switchMode();
             }
         }
@@ -424,16 +417,11 @@
             if (isRunning) {
                 clearInterval(timer);
                 isRunning = false;
-                startPauseBtn.textContent = langStrings.continue;
-                startPauseBtn.classList.remove('bg-red-500');
-                startPauseBtn.classList.add(currentMode === 'focus' ? 'bg-green-500' : 'bg-yellow-500');
             } else {
                 isRunning = true;
                 timer = setInterval(countdown, 1000);
-                startPauseBtn.textContent = langStrings.pause;
-                startPauseBtn.classList.remove('bg-green-500', 'bg-yellow-500');
-                startPauseBtn.classList.add('bg-red-500');
             }
+            updateButtonText();
         }
 
         // 重置
@@ -446,15 +434,11 @@
             timeLeft = focusTime;
             cycleCount = 0;
             
-            updateDisplay();
             document.getElementById('cycle-count').textContent = cycleCount;
             errorMessage.textContent = '';
-            startPauseBtn.textContent = langStrings.start;
-            startPauseBtn.classList.remove('bg-red-500', 'bg-yellow-500');
-            startPauseBtn.classList.add('bg-green-500');
             
-            body.classList.remove('bg-yellow-900');
-            body.classList.add('bg-gray-900');
+            updateDisplay();
+            updateButtonText();
             
             focusSlider.disabled = false;
             breakSlider.disabled = false;
@@ -462,27 +446,19 @@
 
         // 事件监听
         startPauseBtn.addEventListener('click', () => {
-            initAudio(); // 确保音频上下文已激活
-            
+            initAudio(); 
             errorMessage.textContent = '';
-            if (!isRunning) {
-                if (timeLeft === focusTime || (currentMode === 'break' && timeLeft === breakTime) || timeLeft === 0) {
-                    let newFocusTime = parseInt(focusSlider.value, 10) * 60;
-                    if (newFocusTime < 60) {
-                        errorMessage.textContent = langStrings.focusTimeError;
-                        return;
-                    }
-                    focusTime = newFocusTime;
-                    breakTime = parseInt(breakSlider.value, 10) * 60;
-                    
-                    if(currentMode === 'focus') timeLeft = focusTime;
-                    else timeLeft = breakTime;
 
-                    updateDisplay();
-                    focusSlider.disabled = true;
-                    breakSlider.disabled = true;
-                }
+            if (!isRunning) {
+                 if (timeLeft === (currentMode === 'focus' ? focusTime : breakTime)) {
+                     focusTime = parseInt(focusSlider.value, 10) * 60;
+                     breakTime = parseInt(breakSlider.value, 10) * 60;
+                     timeLeft = currentMode === 'focus' ? focusTime : breakTime;
+                 }
+                focusSlider.disabled = true;
+                breakSlider.disabled = true;
             }
+
             toggleTimer();
         });
 
@@ -492,11 +468,16 @@
         
         closeSettingsBtn.addEventListener('click', () => {
             settingsModal.classList.add('hidden');
-            if (!isRunning) resetTimer();
+             if (!isRunning) {
+                focusTime = parseInt(focusSlider.value, 10) * 60;
+                breakTime = parseInt(breakSlider.value, 10) * 60;
+                timeLeft = currentMode === 'focus' ? focusTime : breakTime;
+                updateDisplay();
+            }
         });
 
         focusSlider.addEventListener('input', () => {
-            focusSliderValue.textContent = `${focusSlider.value} ${langStrings.minutes}`;
+            updateSliderDisplay();
             if (!isRunning) {
                 focusTime = parseInt(focusSlider.value, 10) * 60;
                 if (currentMode === 'focus') timeLeft = focusTime;
@@ -505,7 +486,7 @@
         });
 
         breakSlider.addEventListener('input', () => {
-            breakSliderValue.textContent = `${breakSlider.value} ${langStrings.minutes}`;
+            updateSliderDisplay();
             if (!isRunning) {
                 breakTime = parseInt(breakSlider.value, 10) * 60;
                 if (currentMode === 'break') timeLeft = breakTime;
@@ -515,11 +496,9 @@
 
         window.onload = () => {
             applyTranslations();
-            resetTimer();
         };
 
     </script>
 </body>
 </html>
-
 
