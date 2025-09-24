@@ -217,46 +217,64 @@
                 console.error("Could not initialize Web Audio API. Sound will be disabled.", e);
             }
         }
-
-        // 播放提示音 (使用 Web Audio API)
+        
+        // 播放提示音 (使用 Web Audio API) 和语音提示
         function playSound(type) {
             if (!isAudioInitialized || !audioCtx) return;
 
             const now = audioCtx.currentTime;
             let notes = [];
+            let textToSpeak = '';
+            let totalSoundDuration = 0;
 
             if (type === 'focusEnd') {
-                // 专注结束提示音 (旋律上扬 C5, E5, G5)
+                // 专注结束提示音 (舒缓，约3秒)
                 notes = [
-                    { freq: 523.25, start: now, duration: 0.1 },
-                    { freq: 659.25, start: now + 0.15, duration: 0.1 },
-                    { freq: 783.99, start: now + 0.3, duration: 0.15 }
+                    { freq: 523.25, start: now, duration: 0.5 }, // C5
+                    { freq: 659.25, start: now + 0.5, duration: 0.5 }, // E5
+                    { freq: 783.99, start: now + 1.0, duration: 0.5 }, // G5
+                    { freq: 1046.50, start: now + 1.5, duration: 1.5 }  // C6
                 ];
+                textToSpeak = 'Take a break';
+                totalSoundDuration = 3.0;
             } else if (type === 'breakEnd') {
-                // 休息结束提示音 (更直接的提醒 G5, C5)
+                // 休息结束提示音 (提醒，约3秒)
                 notes = [
-                    { freq: 783.99, start: now, duration: 0.15 },
-                    { freq: 523.25, start: now + 0.2, duration: 0.1 }
+                    { freq: 783.99, start: now, duration: 0.3 }, // G5
+                    { freq: 783.99, start: now + 0.4, duration: 0.3 }, // G5
+                    { freq: 783.99, start: now + 0.8, duration: 0.3 }, // G5
+                    { freq: 523.25, start: now + 1.2, duration: 1.5 }  // C5
                 ];
+                textToSpeak = 'Back to work';
+                totalSoundDuration = 2.7;
             }
 
+            // 播放音调
             notes.forEach(note => {
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
-
                 oscillator.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
-
-                oscillator.type = 'sine'; // 正弦波
+                oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(note.freq, note.start);
-                
-                // 控制音量，避免爆音
                 gainNode.gain.setValueAtTime(0.3, note.start);
                 gainNode.gain.exponentialRampToValueAtTime(0.0001, note.start + note.duration);
-
                 oscillator.start(note.start);
                 oscillator.stop(note.start + note.duration);
             });
+
+            // 在声音结束后播放语音提示
+            setTimeout(() => {
+                try {
+                    // 确保之前的语音已停止，避免重叠
+                    window.speechSynthesis.cancel(); 
+                    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                    utterance.lang = 'en-US';
+                    window.speechSynthesis.speak(utterance);
+                } catch (e) {
+                    console.error("Speech synthesis failed.", e);
+                }
+            }, totalSoundDuration * 1000);
         }
 
         // 更新时间显示
@@ -441,4 +459,6 @@
     </script>
 </body>
 </html>
+
+
 
