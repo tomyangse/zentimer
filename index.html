@@ -21,19 +21,62 @@
         .timer-display {
             font-family: 'Orbitron', sans-serif;
         }
-        /* 隐藏数字输入框的默认箭头 */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
         /* 自定义按钮点击效果 */
         .btn-press {
             transform: scale(0.98);
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Custom Range Slider Styles */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #4ade80; /* green-400 */
+            cursor: pointer;
+            margin-top: -9px; /* 垂直居中 thumb */
+        }
+
+        input[type=range]::-moz-range-thumb {
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #4ade80; /* green-400 */
+            cursor: pointer;
+        }
+
+        #break-slider::-webkit-slider-thumb {
+            background: #facc15; /* yellow-400 */
+        }
+        #break-slider::-moz-range-thumb {
+            background: #facc15; /* yellow-400 */
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #374151; /* gray-700 */
+            border-radius: 5px;
+        }
+
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #374151; /* gray-700 */
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -42,7 +85,7 @@
     <div class="w-full max-w-md mx-auto p-4 md:p-8 bg-gray-800 rounded-3xl shadow-2xl">
         
         <!-- 时间显示区域 -->
-        <div class="bg-gray-900/70 p-6 rounded-2xl mb-8 space-y-4">
+        <div class="bg-gray-900/70 p-6 rounded-2xl mb-6 space-y-4">
             <!-- 专注时间 -->
             <div id="focus-timer-container" class="flex justify-between items-center transition-opacity duration-300">
                 <span id="focus-label" class="text-xl font-semibold text-green-400">专注</span>
@@ -57,22 +100,21 @@
             </div>
         </div>
         
-        <!-- 时间设置区域 -->
-        <div class="flex justify-around items-center mb-8 bg-gray-700/50 p-4 rounded-xl">
-            <div class="text-center">
-                <label for="focus-input" class="block text-sm font-medium text-gray-400 mb-2">专注 (分钟)</label>
-                <input type="number" id="focus-input" value="25" class="w-24 bg-gray-900 text-white text-center text-2xl font-bold rounded-lg p-2 border-2 border-transparent focus:outline-none focus:border-green-500 transition">
-            </div>
-            <div class="text-center">
-                <label for="break-input" class="block text-sm font-medium text-gray-400 mb-2">休息 (分钟)</label>
-                <input type="number" id="break-input" value="5" class="w-24 bg-gray-900 text-white text-center text-2xl font-bold rounded-lg p-2 border-2 border-transparent focus:outline-none focus:border-yellow-500 transition">
-            </div>
-        </div>
-
         <!-- 控制按钮 -->
-        <div class="grid grid-cols-3 gap-4">
-            <button id="start-pause-btn" class="col-span-2 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl text-xl transition-all duration-200 transform active:scale-95">开始</button>
-            <button id="reset-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-4 rounded-xl text-xl transition-all duration-200 transform active:scale-95">重置</button>
+        <div class="space-y-4 mb-8">
+            <!-- 第一排: 开始/暂停按钮 -->
+            <button id="start-pause-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl text-xl transition-all duration-200 transform active:scale-95">开始</button>
+            
+            <!-- 第二排: 设置和重置按钮 -->
+            <div class="grid grid-cols-2 gap-4">
+                <button id="settings-btn" class="w-full flex justify-center items-center bg-gray-700/80 hover:bg-gray-700 text-white font-bold py-4 px-4 rounded-xl transition-all duration-200 transform active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+                <button id="reset-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-4 rounded-xl text-xl transition-all duration-200 transform active:scale-95">重置</button>
+            </div>
         </div>
         
         <!-- 错误消息 -->
@@ -84,11 +126,34 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-gray-800 p-6 md:p-8 rounded-2xl w-full max-w-sm shadow-xl">
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-300">设置</h2>
+            <div class="space-y-8">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="focus-slider" class="font-medium text-gray-400">专注时间</label>
+                        <span id="focus-slider-value" class="font-bold text-lg text-green-400">25 分钟</span>
+                    </div>
+                    <input type="range" id="focus-slider" min="1" max="60" value="25" class="w-full">
+                </div>
+                <div>
+                     <div class="flex justify-between items-center mb-2">
+                        <label for="break-slider" class="font-medium text-gray-400">休息时间</label>
+                        <span id="break-slider-value" class="font-bold text-lg text-yellow-400">5 分钟</span>
+                    </div>
+                    <input type="range" id="break-slider" min="0" max="60" value="5" class="w-full">
+                </div>
+            </div>
+            <button id="close-settings-btn" class="mt-10 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl text-lg transition-all duration-200 transform active:scale-95">完成</button>
+        </div>
+    </div>
+
+
     <script>
         // DOM 元素获取
         const body = document.getElementById('body');
-        const focusInput = document.getElementById('focus-input');
-        const breakInput = document.getElementById('break-input');
         const startPauseBtn = document.getElementById('start-pause-btn');
         const resetBtn = document.getElementById('reset-btn');
         const cycleCountSpan = document.getElementById('cycle-count');
@@ -97,19 +162,26 @@
         const breakDisplay = document.getElementById('break-display');
         const focusTimerContainer = document.getElementById('focus-timer-container');
         const breakTimerContainer = document.getElementById('break-timer-container');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings-btn');
+        const focusSlider = document.getElementById('focus-slider');
+        const breakSlider = document.getElementById('break-slider');
+        const focusSliderValue = document.getElementById('focus-slider-value');
+        const breakSliderValue = document.getElementById('break-slider-value');
 
         // 状态变量
         let timer;
         let isRunning = false;
-        let currentMode = 'focus'; // 'focus' 或 'break'
+        let currentMode = 'focus';
         let focusTime = 25 * 60;
         let breakTime = 5 * 60;
         let timeLeft = focusTime;
         let cycleCount = 0;
-        let synth; // 声明 synth，但先不初始化
-        let isAudioInitialized = false; // 跟踪音频是否已初始化
+        let synth;
+        let isAudioInitialized = false;
 
-        // 初始化音频
+        // 音频初始化
         function initAudio() {
             if (isAudioInitialized) return;
             try {
@@ -117,12 +189,11 @@
                     Tone.start(); 
                     synth = new Tone.Synth().toDestination();
                     isAudioInitialized = true;
-                    console.log("音频已成功初始化。");
                 } else {
-                     console.error("Tone.js 库未找到或加载失败。声音将被禁用。");
+                     console.error("Tone.js library not found. Sound will be disabled.");
                 }
             } catch (e) {
-                console.error("无法初始化 Tone.js。声音功能将被禁用。", e);
+                console.error("Could not initialize Tone.js. Sound will be disabled.", e);
             }
         }
 
@@ -130,9 +201,7 @@
         function playSound() {
             if (isAudioInitialized && synth) {
                 synth.triggerAttackRelease("C5", "8n", Tone.now());
-                setTimeout(() => {
-                    synth.triggerAttackRelease("G5", "8n", Tone.now() + 0.2);
-                }, 100);
+                setTimeout(() => synth.triggerAttackRelease("G5", "8n", Tone.now() + 0.2), 200);
             }
         }
 
@@ -144,7 +213,6 @@
                 return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             };
 
-            // 无论在哪种模式，都更新两个显示器的时间
             focusDisplay.textContent = formatTime(currentMode === 'focus' ? timeLeft : focusTime);
             breakDisplay.textContent = formatTime(currentMode === 'break' ? timeLeft : breakTime);
 
@@ -152,14 +220,14 @@
                 focusTimerContainer.classList.remove('opacity-50');
                 breakTimerContainer.classList.add('opacity-50');
                 document.title = `${formatTime(timeLeft)} - 专注`;
-            } else { // break mode
+            } else {
                 breakTimerContainer.classList.remove('opacity-50');
                 focusTimerContainer.classList.add('opacity-50');
                 document.title = `${formatTime(timeLeft)} - 休息`;
             }
         }
 
-        // 切换模式 (专注/休息)
+        // 切换模式
         function switchMode() {
             if (currentMode === 'focus') {
                 currentMode = 'break';
@@ -177,7 +245,7 @@
             updateDisplay();
         }
 
-        // 计时器核心逻辑
+        // 倒计时
         function countdown() {
             if (timeLeft > 0) {
                 timeLeft--;
@@ -188,17 +256,15 @@
             }
         }
 
-        // 开始或暂停计时器
+        // 开始/暂停
         function toggleTimer() {
             if (isRunning) {
-                // 暂停
                 clearInterval(timer);
                 isRunning = false;
                 startPauseBtn.textContent = '继续';
                 startPauseBtn.classList.remove('bg-red-500');
                 startPauseBtn.classList.add(currentMode === 'focus' ? 'bg-green-500' : 'bg-yellow-500');
             } else {
-                // 开始/继续
                 isRunning = true;
                 timer = setInterval(countdown, 1000);
                 startPauseBtn.textContent = '暂停';
@@ -207,13 +273,13 @@
             }
         }
 
-        // 重置计时器
+        // 重置
         function resetTimer() {
             clearInterval(timer);
             isRunning = false;
             currentMode = 'focus';
-            focusTime = parseInt(focusInput.value, 10) * 60 || 0;
-            breakTime = parseInt(breakInput.value, 10) * 60 || 0;
+            focusTime = parseInt(focusSlider.value, 10) * 60;
+            breakTime = parseInt(breakSlider.value, 10) * 60;
             timeLeft = focusTime;
             cycleCount = 0;
             
@@ -227,56 +293,68 @@
             body.classList.remove('bg-yellow-900');
             body.classList.add('bg-gray-900');
             
-            focusInput.disabled = false;
-            breakInput.disabled = false;
+            focusSlider.disabled = false;
+            breakSlider.disabled = false;
         }
 
         // 事件监听
         startPauseBtn.addEventListener('click', () => {
-            if (!isAudioInitialized) {
-                initAudio();
-            }
+            if (!isAudioInitialized) initAudio();
             
             errorMessage.textContent = '';
-            if (!isRunning && (timeLeft === focusTime || timeLeft === 0)) {
-                // 仅在计时器未运行且处于初始状态时读取新值
-                let newFocusTime = parseInt(focusInput.value, 10) * 60;
-                let newBreakTime = parseInt(breakInput.value, 10) * 60;
+            if (!isRunning) {
+                if (timeLeft === focusTime || (currentMode === 'break' && timeLeft === breakTime) || timeLeft === 0) {
+                    let newFocusTime = parseInt(focusSlider.value, 10) * 60;
+                    if (newFocusTime < 60) {
+                        errorMessage.textContent = "专注时间不能少于1分钟！";
+                        return;
+                    }
+                    focusTime = newFocusTime;
+                    breakTime = parseInt(breakSlider.value, 10) * 60;
+                    
+                    if(currentMode === 'focus') timeLeft = focusTime;
+                    else timeLeft = breakTime;
 
-                if(isNaN(newFocusTime) || newFocusTime <= 0) {
-                    errorMessage.textContent = "请输入有效的专注时间！";
-                    return;
+                    updateDisplay();
+                    focusSlider.disabled = true;
+                    breakSlider.disabled = true;
                 }
-                 if(isNaN(newBreakTime) || newBreakTime < 0) {
-                    errorMessage.textContent = "请输入有效的休息时间！";
-                    return;
-                }
-                
-                focusTime = newFocusTime;
-                breakTime = newBreakTime;
-                
-                // 如果是从头开始，则设置timeLeft
-                if(currentMode === 'focus') timeLeft = focusTime;
-                else timeLeft = breakTime;
-
-                updateDisplay();
-                focusInput.disabled = true;
-                breakInput.disabled = true;
             }
             toggleTimer();
         });
 
         resetBtn.addEventListener('click', resetTimer);
         
-        focusInput.addEventListener('change', () => {
+        settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
+        
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
             if (!isRunning) resetTimer();
         });
-        
-        breakInput.addEventListener('change', () => {
-             if (!isRunning) resetTimer();
+
+        focusSlider.addEventListener('input', () => {
+            focusSliderValue.textContent = `${focusSlider.value} 分钟`;
+            if (!isRunning) {
+                focusTime = parseInt(focusSlider.value, 10) * 60;
+                if (currentMode === 'focus') timeLeft = focusTime;
+                updateDisplay();
+            }
         });
 
-        window.onload = resetTimer;
+        breakSlider.addEventListener('input', () => {
+            breakSliderValue.textContent = `${breakSlider.value} 分钟`;
+            if (!isRunning) {
+                breakTime = parseInt(breakSlider.value, 10) * 60;
+                if (currentMode === 'break') timeLeft = breakTime;
+                updateDisplay();
+            }
+        });
+
+        window.onload = () => {
+            focusSliderValue.textContent = `${focusSlider.value} 分钟`;
+            breakSliderValue.textContent = `${breakSlider.value} 分钟`;
+            resetTimer();
+        };
 
     </script>
 </body>
