@@ -6,8 +6,7 @@
     <title>番茄工作法定时器</title>
     <!-- 引入 Tailwind CSS 用于样式设计 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Tone.js 用于生成提示音 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
+    <!-- 移除了 Tone.js 的引用 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- 引入数字时钟字体 -->
@@ -200,40 +199,64 @@
         let breakTime = 5 * 60;
         let timeLeft = focusTime;
         let cycleCount = 0;
-        let synth;
+        let audioCtx; // 使用 Web Audio API
         let isAudioInitialized = false;
 
-        // 音频初始化
+        // 音频初始化 (使用 Web Audio API)
         function initAudio() {
             if (isAudioInitialized) return;
             try {
-                if (typeof Tone !== 'undefined' && Tone.Synth) {
-                    Tone.start(); 
-                    synth = new Tone.Synth().toDestination();
-                    isAudioInitialized = true;
-                } else {
-                     console.error("Tone.js library not found. Sound will be disabled.");
+                // 创建 AudioContext
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                // 浏览器需要用户交互才能播放音频
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
                 }
+                isAudioInitialized = true;
             } catch (e) {
-                console.error("Could not initialize Tone.js. Sound will be disabled.", e);
+                console.error("Could not initialize Web Audio API. Sound will be disabled.", e);
             }
         }
 
-        // 播放提示音
+        // 播放提示音 (使用 Web Audio API)
         function playSound(type) {
-            if (!isAudioInitialized || !synth) return;
-            
-            const now = Tone.now();
+            if (!isAudioInitialized || !audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            let notes = [];
+
             if (type === 'focusEnd') {
-                // 专注结束提示音 (旋律上扬)
-                synth.triggerAttackRelease("C5", "8n", now);
-                synth.triggerAttackRelease("E5", "8n", now + 0.2);
-                synth.triggerAttackRelease("G5", "8n", now + 0.4);
+                // 专注结束提示音 (旋律上扬 C5, E5, G5)
+                notes = [
+                    { freq: 523.25, start: now, duration: 0.1 },
+                    { freq: 659.25, start: now + 0.15, duration: 0.1 },
+                    { freq: 783.99, start: now + 0.3, duration: 0.15 }
+                ];
             } else if (type === 'breakEnd') {
-                // 休息结束提示音 (更直接的提醒)
-                synth.triggerAttackRelease("G5", "8n", now);
-                synth.triggerAttackRelease("C5", "8n", now + 0.25);
+                // 休息结束提示音 (更直接的提醒 G5, C5)
+                notes = [
+                    { freq: 783.99, start: now, duration: 0.15 },
+                    { freq: 523.25, start: now + 0.2, duration: 0.1 }
+                ];
             }
+
+            notes.forEach(note => {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.type = 'sine'; // 正弦波
+                oscillator.frequency.setValueAtTime(note.freq, note.start);
+                
+                // 控制音量，避免爆音
+                gainNode.gain.setValueAtTime(0.3, note.start);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, note.start + note.duration);
+
+                oscillator.start(note.start);
+                oscillator.stop(note.start + note.duration);
+            });
         }
 
         // 更新时间显示
@@ -260,32 +283,24 @@
             updateSpans(breakDisplay, breakTimeStr);
 
             if (currentMode === 'focus') {
-                // 激活专注计时器视觉效果
                 focusDisplay.classList.remove('text-gray-600');
                 focusDisplay.classList.add('text-white');
                 focusLabel.classList.remove('text-gray-500');
                 focusLabel.classList.add('text-green-400');
-
-                // 停用休息计时器视觉效果
                 breakDisplay.classList.add('text-gray-600');
                 breakDisplay.classList.remove('text-white');
                 breakLabel.classList.add('text-gray-500');
                 breakLabel.classList.remove('text-yellow-400');
-                
                 document.title = `${formatTime(timeLeft)} - 专注`;
             } else {
-                // 停用专注计时器视觉效果
                 focusDisplay.classList.add('text-gray-600');
                 focusDisplay.classList.remove('text-white');
                 focusLabel.classList.add('text-gray-500');
                 focusLabel.classList.remove('text-green-400');
-
-                // 激活休息计时器视觉效果
                 breakDisplay.classList.remove('text-gray-600');
                 breakDisplay.classList.add('text-white');
                 breakLabel.classList.remove('text-gray-500');
                 breakLabel.classList.add('text-yellow-400');
-                
                 document.title = `${formatTime(timeLeft)} - 休息`;
             }
         }
@@ -366,7 +381,7 @@
 
         // 事件监听
         startPauseBtn.addEventListener('click', () => {
-            if (!isAudioInitialized) initAudio();
+            initAudio(); // 确保音频上下文已激活
             
             errorMessage.textContent = '';
             if (!isRunning) {
